@@ -1,0 +1,21 @@
+wget https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+
+qemu-img create -F qcow2 -b img/focal-server-cloudimg-amd64.img -f qcow2 vm01.qcow2 10G
+
+cloud-localds -v --network-config=network-config vm01-base.qcow2 user-data meta-data
+
+virsh net-define toy-net.xml
+
+virsh net-dumpxml toy-net
+
+virsh net-start toy-net
+
+virsh net-destory toy-net
+
+virsh net-undefine toy-net
+
+export LIBVIRT_DEFAULT_URI="qemu:///system"
+
+virt-install  --virt-type kvm --name vm01 --ram 3072 --vcpus 2  --os-variant ubuntu24.04 --disk path=vm01.qcow2,size=10,device=disk --disk path=vm01-base.qcow2,device=disk  --import --network network:toy-net --noautoconsole
+
+virsh console vm01

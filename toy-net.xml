@@ -1,0 +1,9 @@
+<network>
+  <name>toy-net</name>
+  <forward mode="nat" dev="eno1"/>
+  <ip address="11.11.0.1" netmask="255.255.0.0">
+    <dhcp>
+      <range start="11.11.0.10" end="11.11.255.250"/>
+    </dhcp>
+  </ip>
+</network>
