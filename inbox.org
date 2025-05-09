@@ -1,8 +1,8 @@
-wget https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+export LIBVIRT_DEFAULT_URI="qemu:///system"
 
-qemu-img create -F qcow2 -b img/focal-server-cloudimg-amd64.img -f qcow2 vm01.qcow2 10G
-
-cloud-localds -v --network-config=network-config vm01-base.qcow2 user-data meta-data
+usermod -aG libvirt suns
+usermod -aG libvirt-qemu suns
+usermod -aG kvm suns
 
 virsh net-define toy-net.xml
 
@@ -10,12 +10,24 @@ virsh net-dumpxml toy-net
 
 virsh net-start toy-net
 
-virsh net-destory toy-net
+virsh net-destroy toy-net
 
 virsh net-undefine toy-net
 
-export LIBVIRT_DEFAULT_URI="qemu:///system"
+wget https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
 
-virt-install  --virt-type kvm --name vm01 --ram 3072 --vcpus 2  --os-variant ubuntu24.04 --disk path=vm01.qcow2,size=10,device=disk --disk path=vm01-base.qcow2,device=disk  --import --network network:toy-net --noautoconsole
+qemu-img create -F qcow2 -b img/focal-server-cloudimg-amd64.img -f qcow2 vm01.qcow2 10G
+
+cloud-localds -v --network-config=network-config vm01-base.qcow2 user-data meta-data
+
+sudo mv /home/suns/scratch/kvm/vm01.qcow2 /var/lib/libvirt/images/
+sudo mv /home/suns/scratch/kvm/vm01-base.qcow2 /var/lib/libvirt/images/
+sudo mv /home/suns/scratch/kvm/img/focal-server-cloudimg-amd64.img /var/lib/libvirt/images/
+
+sudo chown nvidia-persistenced:nvidia-persistenced /var/run/nvidia-persistenced
+sudo chown libvirt-qemu:libvirt-qemu /var/lib/libvirt/images/vm01.qcow2
+sudo chown libvirt-qemu:libvirt-qemu /var/lib/libvirt/images/vm01-base.qcow2
+
+virt-install --virt-type kvm --name vm01 --ram 3072 --vcpus 2 --os-variant ubuntu24.04 --disk path=/var/lib/libvirt/images/vm01.qcow2,size=10,device=disk --disk path=/var/lib/libvirt/images/vm01-base.qcow2,device=disk --import --network network:toy-net --noautoconsole
 
 virsh console vm01
