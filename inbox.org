@@ -4,7 +4,7 @@ usermod -aG libvirt suns
 usermod -aG libvirt-qemu suns
 usermod -aG kvm suns
 
-virsh net-define toy-net.xml
+virsh net-define toy-net.xml 
 
 virsh net-dumpxml toy-net
 
